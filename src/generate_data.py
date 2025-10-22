@@ -1,4 +1,6 @@
-import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
+
 from faker import Faker
 from providers import ProductProvider
 
@@ -70,7 +72,7 @@ def generate_orders(num_records: int, customers, products, discounts):
         }
 
 def save_to_parquet(generator, file_name: str):
-    df = pd.DataFrame(generator)
-    df.to_parquet(f"../data/{file_name}", index=False)
+    table = pa.Table.from_pylist(list(generator))
+    pq.write_table(table, f"../data/{file_name}.parquet")
 
-save_to_parquet(generate_customer_data(10), 'customers.parquet')
+save_to_parquet(generate_customer_data(1000), "customers")

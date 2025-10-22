@@ -4,6 +4,8 @@ import pyarrow.parquet as pq
 from faker import Faker
 from providers import ProductProvider
 
+from dotenv import dotenv_values
+
 fake = Faker()
 fake.add_provider(ProductProvider)
 fake.seed_instance(67)

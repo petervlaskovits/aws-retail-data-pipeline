@@ -2,15 +2,15 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from faker import Faker
-from providers import ProductProvider
+from modules.providers import ProductProvider
 
-from dotenv import dotenv_values
+import random
 
 fake = Faker()
 fake.add_provider(ProductProvider)
 fake.seed_instance(67)
 
-def generate_customer_data(num_records: int):
+def generate_customers(num_records: int):
     for i in range(1, num_records + 1):
         name = f"{fake.first_name()} {fake.last_name()}"
         email = fake.email()
@@ -50,10 +50,14 @@ def generate_products(num_records: int):
             "price": fake.random_number(digits=2),
         }
 
-def generate_orders(num_records: int, customers, products, discounts):
-    customer_ids = [customer.customer_id for customer in customers]
-    product_ids = [product.product_id for product in products]
-    discount_ids = [discount.discount_id for discount in discounts]
+def generate_orders(num_records: int, customer_num_records: int, product_num_records: int, discount_num_records: int):
+    customers = list(generate_customers(customer_num_records))
+    products = list(generate_products(product_num_records))
+    discounts = list(generate_discounts(discount_num_records))
+
+    customer_ids = [customer['customer_id'] for customer in customers]
+    discount_ids = [discount['discount_id'] for discount in discounts]
+    product_ids = [product['product_id'] for product in products]
 
     for i in range(1, num_records + 1):
         customer_id = fake.random_choices(elements=customer_ids, length=1)[0]
@@ -73,8 +77,24 @@ def generate_orders(num_records: int, customers, products, discounts):
             "date_delivered": date_delivered
         }
 
-def save_to_parquet(generator, file_name: str):
-    table = pa.Table.from_pylist(list(generator))
-    pq.write_table(table, f"../data/{file_name}.parquet")
+def randomize_null_data(data: list[dict], k: int) -> list[dict]:
+    all_keys = list(data[0].keys())
+    for record in data:
+        keys_to_modify = random.sample(all_keys, k)
+        for key in keys_to_modify:
+            rng = random.random()
+            match key:
+                case "customer_id" | "product_id" | "order_id" | "discount_id":
+                    continue
+                
+                case _:
+                   if rng < 0.5:
+                        record[key] = None
 
-save_to_parquet(generate_customer_data(1000), "customers")
+    return data
+        
+
+def save_to_parquet(generator, file_name: str, k: int = 1):
+    data = randomize_null_data(list(generator), k)
+    table = pa.Table.from_pylist(data)
+    pq.write_table(table, f"../data/{file_name}.parquet")

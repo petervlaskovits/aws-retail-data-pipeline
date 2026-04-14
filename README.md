@@ -1,6 +1,6 @@
-# AWS Fake Data Pipeline Personal Project
+# AWS Mock Retail Data Pipeline Personal Project
 
-This is a data pipeline that uses various AWS services (S3, Glue, etc.) that makes it possible to analyze mock data using AWS Athena, a service that uses SQL to interact with files stored in AWS S3 buckets.
+This is a data pipeline that uses various AWS services (S3, Glue, etc.) that makes it possible to analyze mock retail data using AWS Athena, a service that uses SQL to interact with files stored in AWS S3 buckets.
 
 Here's how it works:
 
